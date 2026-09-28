@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LIFE TRACKER — Your Personal Life Book</title>
+<style>
+:root{
+  --bg:#f4f0e7; --paper:#fffdf8; --paper2:#f8f4eb; --ink:#292824;
+  --muted:#7b776f; --line:#ded7ca; --sage:#718574; --sage2:#dce5da;
+  --gold:#b28b4a; --rose:#b98682; --blue:#7891a6; --danger:#a85f5f;
+  --shadow:0 18px 50px rgba(52,45,35,.10); --radius:20px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+body{background:
+ radial-gradient(circle at 10% 0%,rgba(178,139,74,.07),transparent 28rem),
+ radial-gradient(circle at 90% 10%,rgba(113,133,116,.09),transparent 32rem);
+}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+h1,h2,h3,.serif{font-family:Georgia,"Times New Roman",serif;font-weight:500}
+.app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;padding:26px 18px;border-right:1px solid var(--line);background:rgba(255,253,248,.82);backdrop-filter:blur(14px);z-index:20}
+.brand{padding:5px 10px 28px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.brand small{letter-spacing:.18em;color:var(--gold);font-size:10px}
+.brand h1{margin:5px 0 0;font-size:25px;letter-spacing:.04em}
+.nav{display:grid;gap:6px}
+.nav button{border:0;background:transparent;color:var(--muted);text-align:left;padding:12px 13px;border-radius:12px;display:flex;gap:11px;align-items:center}
+.nav button:hover,.nav button.active{background:var(--sage2);color:var(--ink)}
+.nav .icon{width:20px;text-align:center}
+.sidebar-foot{position:absolute;bottom:20px;left:18px;right:18px}
+.progress-mini{background:var(--paper2);border:1px solid var(--line);padding:12px;border-radius:14px}
+.progress-mini .bar{height:5px;background:#e4ded2;border-radius:10px;margin-top:8px;overflow:hidden}
+.progress-mini .bar i{display:block;height:100%;background:var(--sage);border-radius:10px}
+.main{min-width:0;padding:22px 28px 50px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;max-width:1280px;margin:0 auto 18px}
+.crumb{color:var(--muted);font-size:13px}
+.top-actions{display:flex;gap:8px}
+.icon-btn,.btn{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:12px;padding:9px 12px}
+.btn.primary{background:var(--ink);color:white;border-color:var(--ink)}
+.btn.soft{background:var(--sage2);border-color:transparent}
+.btn.danger{color:white;background:var(--danger);border-color:var(--danger)}
+.btn:hover,.icon-btn:hover{transform:translateY(-1px)}
+.view{max-width:1280px;margin:auto}
+.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin:20px 0}
+.kicker{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.hero h2{font-size:42px;margin:7px 0 4px}
+.hero p{margin:0;color:var(--muted)}
+.date-line{font-size:14px;color:var(--muted)}
+.grid{display:grid;gap:16px}
+.grid-4{grid-template-columns:repeat(4,1fr)}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+.card{background:rgba(255,253,248,.9);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:0 8px 30px rgba(52,45,35,.045)}
+.card h3{margin:0 0 12px;font-size:20px}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:13px}
+.metric{min-height:115px}
+.metric .label{font-size:12px;color:var(--muted)}
+.metric .value{font-family:Georgia,serif;font-size:31px;margin:7px 0}
+.metric .sub{font-size:12px;color:var(--muted)}
+.progress{height:8px;background:#e7e0d4;border-radius:10px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--sage);border-radius:10px}
+.split{display:flex;justify-content:space-between;align-items:center;gap:14px}
+.list{display:grid;gap:8px}
+.list-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #eee8de}
+.list-row:last-child{border-bottom:0}
+.check{display:flex;align-items:center;gap:9px}
+.check input{accent-color:var(--sage);width:17px;height:17px}
+.input,textarea,select{width:100%;border:1px solid var(--line);background:#fffefa;border-radius:11px;padding:11px 12px;color:var(--ink);outline:none}
+textarea{min-height:115px;resize:vertical}
+.input:focus,textarea:focus,select:focus{border-color:var(--sage)}
+label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}
+.form-grid .full{grid-column:1/-1}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.journey-card{background:var(--ink);color:#fff;padding:26px;border-radius:24px;position:relative;overflow:hidden}
+.journey-card:after{content:"";position:absolute;width:220px;height:220px;border:1px solid rgba(255,255,255,.08);border-radius:50%;right:-80px;top:-80px}
+.journey-card .kicker{color:#d6bd8a}
+.journey-big{font:48px Georgia,serif;margin:8px 0}
+.journey-meta{color:#c8c5bf;font-size:13px}
+.book-page{max-width:1040px;margin:auto;background:var(--paper);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:8px 24px 24px 8px;min-height:620px;padding:48px;position:relative}
+.book-page:before{content:"";position:absolute;left:34px;top:0;bottom:0;border-left:1px solid rgba(185,134,130,.24)}
+.book-page .page-no{position:absolute;right:30px;bottom:22px;color:#aaa39a;font:13px Georgia,serif}
+.daily-head{text-align:center;padding:12px 0 28px;border-bottom:1px solid var(--line)}
+.daily-head h1{font-size:48px;margin:7px 0}
+.daily-head .real{font-size:16px;color:var(--muted)}
+.badges{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:12px}
+.badge{border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:11px;color:var(--muted);background:var(--paper2)}
+.daily-body{padding:28px 0}
+.section-title{font:22px Georgia,serif;margin:0 0 12px}
+.mood-row{display:flex;gap:9px;flex-wrap:wrap}
+.mood{border:1px solid var(--line);background:var(--paper2);padding:9px 11px;border-radius:12px;display:flex;gap:6px;align-items:center}
+.mood.selected{border-color:var(--sage);background:var(--sage2)}
+.nav-days{display:flex;justify-content:space-between;gap:10px;margin:16px auto;max-width:1040px}
+.heatmap{display:grid;grid-template-columns:repeat(30, minmax(7px,1fr));gap:4px}
+.heat{aspect-ratio:1;border-radius:3px;background:#e7e1d7;border:0;min-width:0}
+.heat[data-v="1"]{background:#d9e4d8}.heat[data-v="2"]{background:#b8cdb8}.heat[data-v="3"]{background:#91ad92}.heat[data-v="4"]{background:#69866d}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal-head{text-align:center;font-size:11px;color:var(--muted);padding:6px}
+.cal-day{min-height:58px;border:1px solid #eee8de;background:#fffefa;border-radius:9px;padding:7px;font-size:12px;cursor:pointer}
+.cal-day:hover{border-color:var(--sage)}
+.cal-day.today{outline:2px solid var(--gold)}
+.cal-day.empty{background:transparent;border:0}
+.cal-day .dot{width:6px;height:6px;background:var(--sage);border-radius:50%;display:inline-block}
+.timeline{position:relative;padding-left:26px}
+.timeline:before{content:"";position:absolute;left:7px;top:0;bottom:0;width:1px;background:var(--line)}
+.timeline-item{position:relative;padding:0 0 18px}
+.timeline-item:before{content:"";position:absolute;left:-23px;top:5px;width:9px;height:9px;border-radius:50%;background:var(--sage);border:3px solid var(--paper)}
+.timeline-item h4{margin:0 0 4px;font-family:Georgia,serif;font-size:18px}
+.timeline-item p{margin:0;color:var(--muted);font-size:12px}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{text-align:left;padding:11px 8px;border-bottom:1px solid #eee8de;font-size:13px}
+.table th{color:var(--muted);font-weight:500}
+.empty{text-align:center;padding:38px;color:var(--muted)}
+.toast{position:fixed;right:22px;bottom:22px;background:var(--ink);color:#fff;padding:12px 15px;border-radius:12px;box-shadow:var(--shadow);z-index:100;opacity:0;transform:translateY(10px);transition:.25s;pointer-events:none}
+.toast.show{opacity:1;transform:none}
+.overlay{position:fixed;inset:0;background:rgba(35,32,28,.48);display:flex;align-items:center;justify-content:center;padding:20px;z-index:80}
+.modal{max-width:540px;width:100%;background:var(--paper);border-radius:22px;border:1px solid var(--line);box-shadow:var(--shadow);padding:26px}
+.modal h2{margin-top:0;font-size:28px}
+.welcome{min-height:100vh;display:grid;place-items:center;padding:24px}
+.welcome-card{max-width:760px;width:100%;text-align:center;background:rgba(255,253,248,.94);border:1px solid var(--line);border-radius:30px;box-shadow:var(--shadow);padding:70px 40px}
+.welcome-card h1{font-size:62px;margin:8px 0}
+.welcome-card p{color:var(--muted);font-size:18px;line-height:1.6}
+.eyebrow{letter-spacing:.25em;text-transform:uppercase;color:var(--gold);font-size:11px;font-weight:700}
+.feature-row{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:28px 0}
+.feature-row span{padding:8px 12px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:12px}
+.onboard{text-align:left;max-width:620px;margin:30px auto 0}
+.options{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.option{display:flex;gap:9px;align-items:center;border:1px solid var(--line);padding:10px;border-radius:11px;background:#fffefa}
+.option input{accent-color:var(--sage)}
+.small{font-size:12px;color:var(--muted)}
+.tag{display:inline-block;font-size:10px;padding:4px 7px;border-radius:999px;background:var(--sage2);color:#516354}
+.kpi{font-family:Georgia,serif;font-size:28px}
+@media(max-width:1000px){
+  .app{grid-template-columns:1fr}.sidebar{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;padding:7px;border-right:0;border-top:1px solid var(--line);z-index:50}.brand,.sidebar-foot{display:none}.nav{grid-template-columns:repeat(6,1fr);gap:2px}.nav button{justify-content:center;padding:9px 5px;font-size:0}.nav button .icon{font-size:18px}.main{padding:16px 14px 82px}.grid-4{grid-template-columns:repeat(2,1fr)}.grid-3{grid-template-columns:1fr 1fr}.book-page{padding:34px 28px}.book-page:before{left:17px}
+}
+@media(max-width:650px){
+  .hero{align-items:flex-start;flex-direction:column}.hero h2{font-size:34px}.grid-4,.grid-3,.grid-2,.form-grid{grid-template-columns:1fr}.welcome-card{padding:50px 22px}.welcome-card h1{font-size:45px}.book-page{padding:28px 18px;min-height:0}.daily-head h1{font-size:39px}.heatmap{grid-template-columns:repeat(15,1fr)}.topbar{align-items:flex-start}.top-actions .btn{font-size:12px}.calendar{gap:3px}.cal-day{min-height:49px;padding:5px}.options{grid-template-columns:1fr}
+}
+
+/* --- Visual habit-tracker layer inspired by the supplied references --- */
+.dash-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin:18px 0 16px}.dash-title{font:42px Georgia,serif;margin:5px 0 4px}.dash-sub{color:var(--muted);font-size:13px}.dash-actions{display:flex;gap:8px;flex-wrap:wrap}.stat-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.stat-card{background:rgba(255,253,248,.92);border:1px solid var(--line);border-radius:18px;padding:16px;min-height:105px}.stat-card .stat-icon{font-size:20px}.stat-card .stat-label{font-size:11px;color:var(--muted);margin-top:5px}.stat-card .stat-value{font:29px Georgia,serif;margin-top:5px}.stat-card .stat-foot{font-size:11px;color:var(--muted);margin-top:4px}.panel-title{font:21px Georgia,serif;margin:0}.panel-sub{font-size:11px;color:var(--muted)}.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px}.dashboard-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(280px,.9fr);gap:16px}.habit-board{overflow:auto;border:1px solid var(--line);border-radius:15px;background:#fffefa}.habit-board table{border-collapse:separate;border-spacing:0;min-width:720px;width:100%}.habit-board th,.habit-board td{border-right:1px solid #eee8de;border-bottom:1px solid #eee8de;text-align:center}.habit-board th{font-size:10px;color:var(--muted);font-weight:600;height:28px;background:var(--paper2);position:sticky;top:0;z-index:2}.habit-board th:first-child,.habit-board td:first-child{position:sticky;left:0;z-index:3;background:var(--paper)}.habit-board th:first-child{min-width:145px;text-align:left;padding-left:10px}.habit-board td:first-child{min-width:145px;text-align:left;padding:7px 10px;font-size:11px;white-space:nowrap}.habit-cell{width:22px;height:22px;padding:0;border:0;border-radius:5px;margin:3px;background:#eee9df;cursor:pointer}.habit-cell[data-level="1"]{background:#dce5da}.habit-cell[data-level="2"]{background:#b9cdb8}.habit-cell[data-level="3"]{background:#91ad92}.habit-cell[data-level="4"]{background:#6f8c72}.habit-cell[data-level="5"]{background:#4e6e54}.habit-cell:hover{outline:2px solid var(--gold);outline-offset:1px}.board-legend{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);margin-top:9px}.legend-box{width:12px;height:12px;border-radius:3px;background:#eee9df}.legend-box.l1{background:#dce5da}.legend-box.l2{background:#b9cdb8}.legend-box.l3{background:#91ad92}.legend-box.l4{background:#6f8c72}.week-bars{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;height:160px;align-items:end}.week-day{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px}.week-bar-wrap{height:115px;width:100%;display:flex;align-items:flex-end;justify-content:center}.week-bar{width:70%;max-width:30px;min-height:3px;border-radius:7px 7px 3px 3px;background:var(--sage)}.week-day strong{font-size:10px}.week-day span{font-size:9px;color:var(--muted)}.consistency-list{display:grid;gap:4px}.consistency-row{display:grid;grid-template-columns:24px 1fr 42px;gap:7px;align-items:center;padding:7px 0;border-bottom:1px dotted var(--line)}.consistency-row:last-child{border-bottom:0}.rank{font:13px Georgia,serif;color:var(--gold)}.consistency-name{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.consistency-track{height:5px;background:#ece6dc;border-radius:10px;margin-top:5px;overflow:hidden}.consistency-track i{display:block;height:100%;background:var(--sage)}.consistency-pct{font-size:11px;text-align:right;font-weight:700}.mini-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.mini-box{padding:12px;border:1px solid var(--line);border-radius:13px;background:var(--paper2)}.mini-box b{font:20px Georgia,serif;display:block}.mini-box span{font-size:10px;color:var(--muted)}.goal-bars{display:grid;gap:11px}.goal-line{display:grid;grid-template-columns:130px 1fr 45px;gap:8px;align-items:center}.goal-line span{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.goal-line .progress{height:7px}.pulse-grid{display:grid;grid-template-columns:repeat(30,1fr);gap:3px}.pulse-cell{aspect-ratio:1;border-radius:3px;background:#eee9df}.pulse-cell[data-v="1"]{background:#dce5da}.pulse-cell[data-v="2"]{background:#b9cdb8}.pulse-cell[data-v="3"]{background:#91ad92}.pulse-cell[data-v="4"]{background:#6f8c72}.section-gap{height:16px}@media(max-width:1100px){.stat-strip{grid-template-columns:repeat(3,1fr)}.dashboard-grid{grid-template-columns:1fr}}@media(max-width:650px){.dash-hero{align-items:flex-start;flex-direction:column}.dash-title{font-size:34px}.stat-strip{grid-template-columns:repeat(2,1fr)}.mini-metrics{grid-template-columns:1fr 1fr 1fr}.goal-line{grid-template-columns:95px 1fr 40px}.pulse-grid{grid-template-columns:repeat(15,1fr)}}
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast" class="toast"></div>
+
+<script>
+(() => {
+"use strict";
+
+const KEY = "lifeTracker.v1";
+const TRACK_OPTIONS = ["Habits","Mood","Sleep","Study","Exercise","Water","Reading","Goals","Journal","Productivity"];
+const DEFAULT_HABITS = [
+  {id:uid(),name:"Exercise",icon:"🏋",color:"sage",type:"boolean",target:1,frequency:"daily",startDate:null,endDate:null,active:true},
+  {id:uid(),name:"Study",icon:"📚",color:"blue",type:"duration",target:2,frequency:"daily",startDate:null,endDate:null,active:true},
+  {id:uid(),name:"Reading",icon:"📖",color:"gold",type:"boolean",target:1,frequency:"daily",startDate:null,endDate:null,active:true},
+  {id:uid(),name:"Water",icon:"💧",color:"blue",type:"number",target:8,frequency:"daily",startDate:null,endDate:null,active:true}
+];
+
+let state = load();
+let currentDate = todayKey();
+let view = "today";
+let settingsOpen = false;
+
+function uid(){ return "id_"+Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4); }
+function load(){
+  try { const x=JSON.parse(localStorage.getItem(KEY)); return x || null; } catch(e){ return null; }
+}
+function save(){ localStorage.setItem(KEY,JSON.stringify(state)); }
+function todayKey(){ return keyFromDate(new Date()); }
+function parseKey(s){ const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); }
+function keyFromDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+function addDays(s,n){const d=parseKey(s);d.setDate(d.getDate()+n);return keyFromDate(d)}
+function diffDays(a,b){ return Math.round((parseKey(b)-parseKey(a))/86400000); }
+function daysInMonth(y,m){return new Date(y,m,0).getDate()}
+function isLeapYear(y){return y%4===0&&(y%100!==0||y%400===0)}
+function clampDay(y,m,d){ return Math.min(d,daysInMonth(y,m)); }
+function addYearsSameDay(s,n){const d=parseKey(s), y=d.getFullYear()+n; return keyFromDate(new Date(y,d.getMonth(),clampDay(y,d.getMonth()+1,d.getDate())));}
+function addMonthsSameDay(s,n){const d=parseKey(s); let target=new Date(d.getFullYear(),d.getMonth()+n,1); return keyFromDate(new Date(target.getFullYear(),target.getMonth(),clampDay(target.getFullYear(),target.getMonth()+1,d.getDate())));}
+function fmt(s,opts={year:"numeric",month:"long",day:"numeric"}){return parseKey(s).toLocaleDateString(undefined,opts)}
+function shortFmt(s){return parseKey(s).toLocaleDateString(undefined,{month:"short",day:"numeric"})}
+function isoDateTime(){return new Date().toISOString()}
+
+function journeyInfo(date=currentDate){
+  if(!state) return null;
+  const start=state.profile.startDate;
+  const day=diffDays(start,date)+1;
+  if(day<1) return {future:false,day};
+  const year=Math.floor((day-1)/365)+1; // corrected below using anniversary boundaries
+  let y=1;
+  while(parseKey(addYearsSameDay(start,y))<=parseKey(date)) y++;
+  const yearStart=addYearsSameDay(start,y-1);
+  const yearEnd=addDays(addYearsSameDay(start,y),-1);
+  let m=1, ms=yearStart;
+  while(parseKey(addMonthsSameDay(yearStart,m))<=parseKey(date)){m++; ms=addMonthsSameDay(yearStart,m-1)}
+  const me=addDays(addMonthsSameDay(yearStart,m),-1);
+  return {day,year,month:m,yearStart,yearEnd,monthStart:ms,monthEnd:me};
+}
+function getDayRecord(date=currentDate, create=false){
+  const info=journeyInfo(date);
+  if(!info || info.day<1) return null;
+  if(!state.days[date] && create){
+    state.days[date]={
+      date, journeyDay:info.day, journeyYear:info.year, journeyMonth:info.month,
+      mood:"", habits:{}, sleep:{bed:"",wake:"",hours:0}, study:{hours:0,subject:"",sessions:0,tasks:0},
+      exercise:0, water:0, reading:0, goals:{}, score:0, journal:"", intention:"", reflection:"",
+      createdAt:isoDateTime(), updatedAt:isoDateTime()
+    };
+  }
+  return state.days[date] || null;
+}
+function ensureRecord(date=currentDate){ const r=getDayRecord(date,true); r.updatedAt=isoDateTime(); save(); return r; }
+
+function monthDays(info){let out=[], d=info.monthStart; while(parseKey(d)<=parseKey(info.monthEnd)){out.push(d);d=addDays(d,1)} return out}
+function yearDays(info){let out=[],d=info.yearStart;while(parseKey(d)<=parseKey(info.yearEnd)){out.push(d);d=addDays(d,1)}return out}
+function recordsBetween(a,b){let out=[]; for(let d=a;parseKey(d)<=parseKey(b);d=addDays(d,1)){if(state.days[d])out.push(state.days[d])} return out}
+function trackedCount(a,b){return recordsBetween(a,b).filter(r=>hasContent(r)).length}
+function hasContent(r){return !!(r.mood||r.journal||r.intention||r.reflection||r.score||Object.keys(r.habits||{}).length||r.sleep.hours||r.study.hours||r.exercise||r.water||r.reading)}
+function avg(arr){const x=arr.filter(n=>Number.isFinite(n)&&n>0);return x.length?x.reduce((a,b)=>a+b,0)/x.length:0}
+function sleepHours(r){
+  if(!r) return 0;
+  if(Number(r.sleep?.hours)) return Number(r.sleep.hours);
+  if(r.sleep?.bed && r.sleep?.wake){
+    let b=r.sleep.bed.split(":").map(Number), w=r.sleep.wake.split(":").map(Number);
+    let mins=(w[0]*60+w[1])-(b[0]*60+b[1]); if(mins<0)mins+=1440; return mins/60;
+  }
+  return 0;
+}
+function stats(a,b){
+  const rs=recordsBetween(a,b), n=rs.length;
+  const habitChecks=rs.reduce((sum,r)=>sum+Object.values(r.habits||{}).filter(v=>v===true||Number(v)>0).length,0);
+  const activeHabits=Math.max(1,state.habits.filter(h=>h.active).length);
+  const possible=Math.max(1,n*activeHabits);
+  const journal=rs.filter(r=>r.journal?.trim()).length;
+  const study=rs.reduce((s,r)=>s+Number(r.study?.hours||0),0);
+  const exercise=rs.filter(r=>Number(r.exercise)>0 || r.habits?.Exercise===true).length;
+  const water=avg(rs.map(r=>Number(r.water)||0));
+  const sleep=avg(rs.map(sleepHours));
+  const score=avg(rs.map(r=>Number(r.score)||0));
+  const mood={};
+  rs.forEach(r=>{if(r.mood)mood[r.mood]=(mood[r.mood]||0)+1});
+  return {days:n,tracked:rs.filter(hasContent).length,habitPct:Math.round(habitChecks/possible*100),journal,study,exercise,water,sleep,score,mood};
+}
+function escape(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+
+function init(){
+  if(!state){ renderWelcome(); return; }
+  if(!state.days)state.days={};
+  if(!state.habits?.length)state.habits=DEFAULT_HABITS.map(h=>({...h,startDate:state.profile.startDate}));
+  if(!state.goals)state.goals=[];
+  if(!state.challenges)state.challenges=[];
+  if(!state.reviews)state.reviews={months:{},years:{}};
+  if(!state.profile.preferences)state.profile.preferences={theme:"light",weekStart:"monday"};
+  currentDate=todayKey();
+  render();
+}
+function renderWelcome(){
+  document.getElementById("app").innerHTML=`<div class="welcome">
+    <div class="welcome-card">
+      <div class="eyebrow">A personal life book</div>
+      <h1>LIFE TRACKER</h1>
+      <p>Build your life one day at a time.<br>Your journey starts when you decide.</p>
+      <div class="feature-row"><span>Journal</span><span>Habits</span><span>Goals</span><span>Reflection</span><span>Long-term journey</span></div>
+      <button class="btn primary" style="padding:13px 24px" onclick="showSetup()">Begin</button>
+    </div>
+  </div>`;
+}
+function showSetup(){
+  const d=todayKey();
+  document.getElementById("app").innerHTML=`<div class="welcome">
+    <div class="welcome-card">
+      <div class="eyebrow">Begin your journey</div>
+      <h1 style="font-size:42px">Choose your beginning.</h1>
+      <div class="onboard">
+        <label>When would you like your journey to begin?</label>
+        <input id="setupDate" class="input" type="date" value="${d}">
+        <div style="height:18px"></div>
+        <label>What would you like to track?</label>
+        <div class="options">${TRACK_OPTIONS.map((x,i)=>`<label class="option"><input type="checkbox" value="${x}" ${i<7||x==="Goals"||x==="Journal"?"checked":""}> ${x}</label>`).join("")}</div>
+        <div class="actions">
+          <button class="btn primary" onclick="startJourney()">Start My Journey</button>
+          <button class="btn" onclick="startJourney(true)">Skip Setup</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+window.showSetup=showSetup;
+window.startJourney=function(skip=false){
+  const start=document.getElementById("setupDate").value||todayKey();
+  const selected=[...document.querySelectorAll(".option input:checked")].map(x=>x.value);
+  state={
+    version:1,
+    profile:{name:"",startDate:start,createdAt:isoDateTime(),preferences:{theme:"light",weekStart:"monday",timeFormat:"24",dateFormat:"long"}},
+    days:{},habits:[],goals:[],challenges:[],reviews:{months:{},years:{}},lastExport:null
+  };
+  const names=skip?["Exercise","Study","Reading","Water"]:selected.filter(x=>["Exercise","Study","Reading","Water","Meditation","Early Wake-up"].includes(x));
+  state.habits=names.map(name=>({id:uid(),name,icon:iconFor(name),color:"sage",type:name==="Study"?"duration":name==="Water"?"number":"boolean",target:name==="Study"?2:name==="Water"?8:1,frequency:"daily",startDate:start,endDate:null,active:true}));
+  ensureRecord(start); currentDate=start; save(); render();
+  toast("Your journey has begun.");
+}
+function iconFor(n){return ({Exercise:"🏋",Study:"📚",Reading:"📖",Water:"💧",Meditation:"🧘","Early Wake-up":"🌅"})[n]||"✓"}
+
+function shell(content){
+  const info=journeyInfo(currentDate)||{};
+  document.getElementById("app").innerHTML=`<div class="app">
+    <aside class="sidebar">
+      <div class="brand"><small>YOUR PERSONAL</small><h1>LIFE TRACKER</h1></div>
+      <nav class="nav">
+        ${nav("today","⌂","Dashboard")}
+        ${nav("day","▣","Daily Page")}
+        ${nav("month","◫","Month")}
+        ${nav("year","◇","Year")}
+        ${nav("timeline","│","Timeline")}
+        ${nav("calendar","▦","Calendar")}
+        ${nav("habits","✓","Habits")}
+        ${nav("goals","◎","Goals")}
+        ${nav("challenges","◆","Challenges")}
+        ${nav("archive","⌘","Archive")}
+        ${nav("settings","⚙","Settings")}
+      </nav>
+      <div class="sidebar-foot"><div class="progress-mini"><div class="split"><span class="small">Journey</span><b>${info.day||0}</b></div><div class="bar"><i style="width:${Math.min(100,((info.day||0)%365)/365*100)}%"></i></div></div></div>
+    </aside>
+    <main class="main">
+      <div class="topbar">
+        <div class="crumb">MY JOURNEY · ${info.year?`YEAR ${info.year} · MONTH ${info.month} · DAY ${info.day}`:""}</div>
+        <div class="top-actions"><button class="btn" onclick="jumpToday()">Today</button><button class="btn" onclick="openJump()">Jump</button></div>
+      </div>
+      <section class="view">${content}</section>
+    </main>
+  </div>`;
+}
+function nav(v,ic,label){return `<button class="${view===v?"active":""}" onclick="go('${v}')"><span class="icon">${ic}</span><span>${label}</span></button>`}
+window.go=function(v){view=v;render()};
+window.jumpToday=function(){currentDate=todayKey();view="today";render();};
+window.openJump=function(){modal(`<h2>Jump through your journey</h2><label>Real calendar date</label><input id="jumpDate" class="input" type="date" value="${currentDate}"><div style="height:12px"></div><label>Journey day</label><input id="jumpDay" class="input" type="number" min="1" value="${journeyInfo(currentDate)?.day||1}"><div class="actions"><button class="btn primary" onclick="applyJump()">Open Day</button><button class="btn" onclick="closeModal()">Cancel</button></div>`)}
+window.applyJump=function(){let d=document.getElementById("jumpDate").value;const jd=Number(document.getElementById("jumpDay").value);if(jd>0){d=addDays(state.profile.startDate,jd-1)}if(parseKey(d)>=parseKey(state.profile.startDate)){currentDate=d;view="day";closeModal();render()}else toast("That date is before your journey begins.")}
+
+function render(){
+  if(!state){renderWelcome();return}
+  const map={today:renderToday,day:renderDay,month:renderMonth,year:renderYear,timeline:renderTimeline,calendar:renderCalendar,habits:renderHabits,goals:renderGoals,challenges:renderChallenges,archive:renderArchive,settings:renderSettings};
+  shell(map[view]?map[view]():renderToday());
+}
+
+function renderToday(){
+ const i=journeyInfo(todayKey());
+ if(!i||i.day<1)return `<div class="empty card">Your journey begins on ${fmt(state.profile.startDate)}. Today is before your selected start date.<div class="actions" style="justify-content:center"><button class="btn primary" onclick="currentDate=state.profile.startDate;view='day';render()">Open Day 1</button></div></div>`;
+ const r=ensureRecord(todayKey()),habits=state.habits.filter(h=>h.active),pct=dayHabitPct(todayKey()),month=stats(i.monthStart,i.monthEnd),top=topHabits(i.monthStart,i.monthEnd,15),week=lastSevenDays(todayKey()),goals=state.goals.filter(g=>g.status!=="archive").slice(0,6),name=state.profile.name?.trim()?`, ${escape(state.profile.name.trim())}`:"";
+ return `<div class="dash-hero"><div><div class="kicker">Life dashboard</div><div class="dash-title">Good morning${name}.</div><div class="dash-sub">${fmt(todayKey())} · Personal Year ${i.year} · Month ${i.month} · Day ${i.day}</div></div><div class="dash-actions"><button class="btn" onclick="openJump()">Jump to day</button><button class="btn primary" onclick="go('day')">Open daily page</button></div></div>
+ <div class="stat-strip">${dashStat("🔥","Current streak",streak(),"days")}${dashStat("✓","Today",pct+"%","habits complete")}${dashStat("⭐","Daily score",Number(r.score)||0,"out of 100")}${dashStat("📚","Study",Number(r.study?.hours||0).toFixed(1)+"h","today")}${dashStat("😴","Sleep",sleepHours(r)?sleepHours(r).toFixed(1)+"h":"—","last night")}</div>
+ <div class="section-gap"></div><div class="dashboard-grid">
+ <div class="card"><div class="panel-head"><div><h3 class="panel-title">Personal month habit tracker</h3><div class="panel-sub">${fmt(i.monthStart)} → ${fmt(i.monthEnd)} · every square is one day</div></div><span class="tag">${month.habitPct}% month completion</span></div>${habits.length?`<div class="habit-board">${habitMonthTable(i,habits)}</div><div class="board-legend"><span>Less</span><span class="legend-box"></span><span class="legend-box l1"></span><span class="legend-box l2"></span><span class="legend-box l3"></span><span class="legend-box l4"></span><span>More</span></div>`:`<div class="empty">Add your first habit to build the tracker.</div>`}</div>
+ <div class="card"><div class="panel-head"><div><h3 class="panel-title">15 Most Consistent</h3><div class="panel-sub">Based on this personal month</div></div><button class="btn" onclick="go('habits')">Manage</button></div><div class="consistency-list">${top.length?top.map((x,n)=>`<div class="consistency-row"><div class="rank">${n+1}</div><div><div class="consistency-name">${x.h.icon} ${escape(x.h.name)}</div><div class="consistency-track"><i style="width:${x.pct}%"></i></div></div><div class="consistency-pct">${x.pct}%</div></div>`).join(""):`<div class="empty">No habit history yet.</div>`}</div></div></div>
+ </div>
+ <div class="section-gap"></div><div class="grid grid-2">
+ <div class="card"><div class="panel-head"><div><h3 class="panel-title">Weekly progress</h3><div class="panel-sub">Last 7 journey days</div></div><span class="tag">${Math.round(week.reduce((a,x)=>a+x.pct,0)/Math.max(1,week.length))}% avg</span></div><div class="week-bars">${week.map(x=>`<div class="week-day"><div class="week-bar-wrap"><div class="week-bar" style="height:${Math.max(3,x.pct)}%"></div></div><strong>${x.pct}%</strong><span>${shortFmt(x.date)}</span></div>`).join("")}</div></div>
+ <div class="card"><div class="panel-head"><div><h3 class="panel-title">Month snapshot</h3><div class="panel-sub">Your personal chapter</div></div><button class="btn" onclick="go('month')">Open month</button></div><div class="mini-metrics"><div class="mini-box"><b>${month.tracked}</b><span>days tracked</span></div><div class="mini-box"><b>${month.journal}</b><span>journal entries</span></div><div class="mini-box"><b>${month.exercise}</b><span>exercise days</span></div></div><div style="height:12px"></div><div class="mini-metrics"><div class="mini-box"><b>${month.water?month.water.toFixed(1):"—"}</b><span>avg water</span></div><div class="mini-box"><b>${month.sleep?month.sleep.toFixed(1)+"h":"—"}</b><span>avg sleep</span></div><div class="mini-box"><b>${month.score?month.score.toFixed(0):"—"}</b><span>avg score</span></div></div></div></div>
+ <div class="section-gap"></div><div class="grid grid-2">
+ <div class="card"><div class="panel-head"><div><h3 class="panel-title">Today's checklist</h3><div class="panel-sub">Tap a value to update it</div></div><span class="tag">${pct}%</span></div><div class="progress"><i style="width:${pct}%"></i></div><div class="list" style="margin-top:10px">${habits.length?habits.map(h=>habitCheck(h,r)).join(""):`<div class="empty">No habits yet.</div>`}</div><div class="actions"><button class="btn soft" onclick="addHabit()">+ Add habit</button><button class="btn" onclick="go('habits')">Habit tracker</button></div></div>
+ <div class="card"><div class="panel-head"><div><h3 class="panel-title">Goals progress</h3><div class="panel-sub">Goals stay independent from habits</div></div><button class="btn" onclick="go('goals')">All goals</button></div>${goals.length?`<div class="goal-bars">${goals.map(g=>{const p=g.target?Math.min(100,Number(g.current||0)/Number(g.target)*100):0;return `<div class="goal-line"><span>${escape(g.name)}</span><div class="progress"><i style="width:${p}%"></i></div><b>${Math.round(p)}%</b></div>`}).join("")}</div>`:`<div class="empty">No goals yet.<br>Create a goal for this chapter.</div>`}</div></div>
+ <div class="section-gap"></div><div class="card"><div class="panel-head"><div><h3 class="panel-title">30-day consistency pulse</h3><div class="panel-sub">Activity across the most recent 30 journey days</div></div><span class="small">Less → more</span></div><div class="pulse-grid">${pulseCells(todayKey()).join("")}</div></div>
+ <div class="section-gap"></div><div class="grid grid-2"><div class="card"><div class="panel-head"><h3 class="panel-title">Today's intention</h3><span class="small">Day ${i.day}</span></div><textarea id="quickIntention" placeholder="What matters today?">${escape(r.intention)}</textarea><div class="actions"><button class="btn primary" onclick="saveQuick()">Save today's page</button></div></div><div class="journey-card"><div class="kicker">Your journey</div><div class="journey-big">Day ${i.day}</div><div class="journey-meta">Year ${i.year} · Month ${i.month}<br>${fmt(i.monthStart)} → ${fmt(i.monthEnd)}</div><div class="actions"><button class="btn" onclick="go('day')" style="background:#fff;color:#292824;border-color:#fff">Open daily page</button></div></div></div>`;
+}
+function dashStat(ic,label,value,foot){return `<div class="stat-card"><div class="stat-icon">${ic}</div><div class="stat-label">${label}</div><div class="stat-value">${escape(value)}</div><div class="stat-foot">${foot}</div></div>`}
+function habitActiveOn(h,d){return parseKey(d)>=parseKey(h.startDate||state.profile.startDate)&&(!h.endDate||parseKey(d)<=parseKey(h.endDate))}
+function habitValueComplete(h,val){if(val===true)return true;const n=Number(val);if(!Number.isFinite(n)||n<=0)return false;if(h.type==="rating")return n>=Math.max(1,Number(h.target||1));return n>=Math.max(.0001,Number(h.target||1))}
+function habitLevel(h,val){if(!val)return 0;if(val===true)return 5;const n=Number(val),t=Math.max(.0001,Number(h.target||1));return Math.min(5,Math.max(1,Math.ceil(n/t*5)))}
+function dayHabitPct(d){const hs=state.habits.filter(h=>h.active&&habitActiveOn(h,d)),r=getDayRecord(d);if(!hs.length)return 0;return Math.round(hs.filter(h=>habitValueComplete(h,r?.habits?.[h.id])).length/hs.length*100)}
+function habitMonthTable(i,habits){const ds=monthDays(i);return `<table><thead><tr><th>Habit</th>${ds.map(d=>`<th>${parseKey(d).getDate()}</th>`).join("")}</tr></thead><tbody>${habits.map(h=>`<tr><td>${h.icon} ${escape(h.name)}</td>${ds.map(d=>{const r=state.days[d],v=r?.habits?.[h.id],level=habitActiveOn(h,d)?habitLevel(h,v):0;return `<td><button class="habit-cell" data-level="${level}" title="${escape(h.name)} · ${fmt(d)} · ${v??"not tracked"}" onclick="openDate('${d}')"></button></td>`}).join("")}</tr>`).join("")}</tbody></table>`}
+function topHabits(a,b,limit=15){return state.habits.map(h=>{let eligible=0,done=0;for(let d=a;parseKey(d)<=parseKey(b);d=addDays(d,1)){if(habitActiveOn(h,d)){eligible++;if(habitValueComplete(h,state.days[d]?.habits?.[h.id]))done++}}return {h,pct:eligible?Math.round(done/eligible*100):0,eligible,done}}).filter(x=>x.eligible>0).sort((a,b)=>b.pct-a.pct||b.done-a.done).slice(0,limit)}
+function lastSevenDays(end){const out=[];for(let n=6;n>=0;n--){const d=addDays(end,-n);if(parseKey(d)>=parseKey(state.profile.startDate))out.push({date:d,pct:dayHabitPct(d)})}return out}
+function pulseCells(end){const out=[];for(let n=29;n>=0;n--){const d=addDays(end,-n),r=state.days[d];let v=0;if(r){if(hasContent(r))v=1;if(r.journal)v++;if(Number(r.score)>=70)v++;if(Object.keys(r.habits||{}).some(k=>habitValueComplete(state.habits.find(h=>h.id===k)||{target:1,type:"boolean"},r.habits[k])))v++}out.push(`<button class="pulse-cell" data-v="${Math.min(4,v)}" title="${fmt(d)} · ${dayHabitPct(d)}% habits" onclick="openDate('${d}')"></button>`)}return out}
+function metric(ic,l,v,s){return `<div class="card metric"><div class="label">${ic} ${l}</div><div class="value">${escape(v)}</div><div class="sub">${s}</div></div>`}
+function habitCheck(h,r){let val=r.habits[h.id];if(h.type==="boolean")return `<label class="list-row check"><span><input type="checkbox" ${val===true?"checked":""} onchange="toggleHabit('${h.id}',this.checked)"> ${h.icon} ${escape(h.name)}</span><span class="small">daily</span></label>`;const step=h.type==="rating"?"1":".1",max=h.type==="rating"?5:"999";return `<label class="list-row check"><span>${h.icon} ${escape(h.name)} <span class="small">target ${h.target}</span></span><input style="width:92px;padding:7px 8px" class="input" type="${h.type==="rating"?"range":"number"}" min="0" max="${max}" step="${step}" value="${val??""}" onchange="setHabitValue('${h.id}',this.value)">${h.type==="rating"?`<output style="width:18px">${val??0}</output>`:""}</label>`}
+window.toggleHabit=function(id,val){setHabitValue(id,val)};
+window.setHabitValue=function(id,val){const r=ensureRecord(currentDate),h=state.habits.find(x=>x.id===id);if(!h)return;if(h.type==="boolean")r.habits[id]=!!val;else{const n=Number(val);if(val===""||!Number.isFinite(n)||n<=0)delete r.habits[id];else r.habits[id]=n}r.score=calcScore(r);save();render()}
+
+function renderDay(){
+  const i=journeyInfo(currentDate), r=ensureRecord(currentDate), moods=[["😊","Happy"],["😌","Calm"],["⚡","Energetic"],["😴","Tired"],["😟","Anxious"],["😔","Sad"],["😡","Angry"],["😐","Neutral"]];
+  return `<div class="nav-days"><button class="btn" onclick="prevDay()">← Previous Day</button><button class="btn soft" onclick="jumpToday()">Today</button><button class="btn" onclick="nextDay()">Next Day →</button></div>
+  <div class="book-page">
+    <div class="daily-head"><div class="kicker">Day ${i.day} of your journey</div><h1>DAY ${i.day}</h1><div class="real">${fmt(currentDate)}</div><div class="badges"><span class="badge">Year ${i.year}</span><span class="badge">Month ${i.month}</span><span class="badge">Real calendar · ${parseKey(currentDate).getFullYear()}</span></div></div>
+    <div class="daily-body">
+      <div class="grid grid-2">
+        <div><div class="section-title">Today's intention</div><textarea id="intention">${escape(r.intention)}</textarea></div>
+        <div><div class="section-title">How am I feeling?</div><div class="mood-row">${moods.map(m=>`<button class="mood ${r.mood===m[1]?"selected":""}" onclick="setMood('${m[1]}')">${m[0]} ${m[1]}</button>`).join("")}</div></div>
+      </div>
+      <div style="height:25px"></div>
+      <div class="grid grid-3">
+        <div class="card"><h3>Habits</h3><div class="list">${state.habits.filter(h=>h.active).map(h=>habitCheck(h,r)).join("")||'<div class="empty">No active habits.</div>'}</div></div>
+        <div class="card"><h3>Body & sleep</h3><div class="form-grid">
+          <div><label>Sleep time</label><input id="bed" class="input" type="time" value="${escape(r.sleep.bed)}"></div>
+          <div><label>Wake time</label><input id="wake" class="input" type="time" value="${escape(r.sleep.wake)}"></div>
+          <div><label>Sleep hours</label><input id="sleepHours" class="input" type="number" step=".1" value="${r.sleep.hours||""}"></div>
+          <div><label>Water / glasses</label><input id="water" class="input" type="number" step="1" value="${r.water||""}"></div>
+          <div><label>Exercise minutes</label><input id="exercise" class="input" type="number" step="1" value="${r.exercise||""}"></div>
+          <div><label>Reading minutes</label><input id="reading" class="input" type="number" step="1" value="${r.reading||""}"></div>
+        </div></div>
+        <div class="card"><h3>Study & productivity</h3><div class="form-grid">
+          <div><label>Study hours</label><input id="studyHours" class="input" type="number" step=".25" value="${r.study.hours||""}"></div>
+          <div><label>Sessions</label><input id="sessions" class="input" type="number" value="${r.study.sessions||""}"></div>
+          <div><label>Completed tasks</label><input id="tasks" class="input" type="number" value="${r.study.tasks||""}"></div>
+          <div><label>Daily score / 100</label><input id="score" class="input" type="number" min="0" max="100" value="${r.score||""}"></div>
+          <div class="full"><label>Subject / topic</label><input id="subject" class="input" value="${escape(r.study.subject)}"></div>
+        </div></div>
+      </div>
+      <div style="height:25px"></div>
+      <div class="grid grid-2">
+        <div><div class="section-title">Journal</div><textarea id="journal" style="min-height:220px" placeholder="How was today? What did you learn?">${escape(r.journal)}</textarea></div>
+        <div><div class="section-title">Reflection</div><textarea id="reflection" style="min-height:220px" placeholder="What went well? What would you change?">${escape(r.reflection)}</textarea></div>
+      </div>
+      <div class="actions" style="justify-content:center;margin-top:24px"><button class="btn primary" onclick="saveDay()">Save Day ${i.day}</button></div>
+    </div>
+    <div class="page-no">${i.year} · ${i.month} · ${i.day}</div>
+  </div>`;
+}
+window.prevDay=function(){const d=addDays(currentDate,-1);if(parseKey(d)>=parseKey(state.profile.startDate)){currentDate=d;render()}else toast("This is Day 1.")};
+window.nextDay=function(){currentDate=addDays(currentDate,1);render()};
+window.setMood=function(m){const r=ensureRecord(currentDate);r.mood=m;save();render()};
+window.saveDay=function(){
+  const r=ensureRecord(currentDate);
+  r.intention=document.getElementById("intention").value;r.journal=document.getElementById("journal").value;r.reflection=document.getElementById("reflection").value;
+  r.sleep={bed:document.getElementById("bed").value,wake:document.getElementById("wake").value,hours:Number(document.getElementById("sleepHours").value)||0};
+  r.water=Number(document.getElementById("water").value)||0;r.exercise=Number(document.getElementById("exercise").value)||0;r.reading=Number(document.getElementById("reading").value)||0;
+  r.study={hours:Number(document.getElementById("studyHours").value)||0,subject:document.getElementById("subject").value,sessions:Number(document.getElementById("sessions").value)||0,tasks:Number(document.getElementById("tasks").value)||0};
+  r.score=Math.max(0,Math.min(100,Number(document.getElementById("score").value)||0));r.updatedAt=isoDateTime();save();toast("Day saved.");render();
+}
+function saveQuick(){const r=ensureRecord(todayKey());r.intention=document.getElementById("quickIntention").value;save();toast("Today's page saved.");render()}
+
+function renderMonth(){
+  const i=journeyInfo(currentDate), ds=monthDays(i), s=stats(i.monthStart,i.monthEnd);
+  return `<div class="hero"><div><div class="kicker">Personal chapter ${String(i.month).padStart(2,"0")}</div><h2>Month ${i.month}</h2><p>${fmt(i.monthStart)} → ${fmt(i.monthEnd)}</p></div><button class="btn primary" onclick="openMonthReview()">Month Review</button></div>
+  <div class="grid grid-4">${metric("✓","Days tracked",s.tracked,`of ${s.days}`)}${metric("✓","Habit completion",s.habitPct,"%")}${metric("📚","Study",s.study.toFixed(1)+"h","total")}${metric("😴","Average sleep",s.sleep?s.sleep.toFixed(1)+"h":"—","average")}</div>
+  <div style="height:16px"></div>
+  <div class="grid grid-2">
+    <div class="card"><div class="card-head"><h3>Month map</h3><span class="small">${ds.length} days</span></div><div class="calendar">${ds.map(d=>{const r=state.days[d], n=parseKey(d).getDate();return `<button class="cal-day ${d===todayKey()?"today":""}" onclick="openDate('${d}')"><b>${n}</b><br>${r&&hasContent(r)?'<span class="dot"></span>':''}<span class="small">${journeyInfo(d).day}</span></button>`}).join("")}</div></div>
+    <div class="card"><h3>Chapter notes</h3><p class="small">This is a personal month, not a calendar month. Your chapter runs from ${fmt(i.monthStart)} through ${fmt(i.monthEnd)}.</p><div class="list"><div class="list-row"><span>Journal entries</span><b>${s.journal}</b></div><div class="list-row"><span>Exercise days</span><b>${s.exercise}</b></div><div class="list-row"><span>Average water</span><b>${s.water?s.water.toFixed(1):"—"}</b></div><div class="list-row"><span>Average daily score</span><b>${s.score?s.score.toFixed(0):"—"}</b></div></div></div>
+  </div>`;
+}
+window.openDate=function(d){currentDate=d;view="day";render()};
+window.openMonthReview=function(){
+ const i=journeyInfo(currentDate), k=`${i.year}-${i.month}`, old=state.reviews.months[k]||{};
+ modal(`<h2>Month ${i.month} Review</h2><p class="small">${fmt(i.monthStart)} → ${fmt(i.monthEnd)}</p>
+ <div class="grid grid-2"><div><label>What went well?</label><textarea id="rw1">${escape(old.wentWell||"")}</textarea></div><div><label>What was difficult?</label><textarea id="rw2">${escape(old.difficult||"")}</textarea></div><div><label>What should I change?</label><textarea id="rw3">${escape(old.change||"")}</textarea></div><div><label>What should I continue?</label><textarea id="rw4">${escape(old.continue||"")}</textarea></div><div class="full"><label>What did I learn?</label><textarea id="rw5">${escape(old.learned||"")}</textarea></div></div>
+ <div class="actions"><button class="btn primary" onclick="saveMonthReview('${k}')">Save Review</button><button class="btn" onclick="closeModal()">Cancel</button></div>`);
+}
+window.saveMonthReview=function(k){state.reviews.months[k]={wentWell:document.getElementById("rw1").value,difficult:document.getElementById("rw2").value,change:document.getElementById("rw3").value,continue:document.getElementById("rw4").value,learned:document.getElementById("rw5").value,savedAt:isoDateTime()};save();closeModal();toast("Month review saved.")}
+
+function renderYear(){
+ const i=journeyInfo(currentDate), s=stats(i.yearStart,i.yearEnd), months=[];
+ for(let m=1;m<=12;m++){const ms=addMonthsSameDay(i.yearStart,m-1), me=addDays(addMonthsSameDay(i.yearStart,m),-1);if(parseKey(ms)>parseKey(i.yearEnd))break;const e=parseKey(me)>parseKey(i.yearEnd)?i.yearEnd:me;months.push({m,start:ms,end:e,s:stats(ms,e)})}
+ return `<div class="hero"><div><div class="kicker">Personal volume ${i.year}</div><h2>Year ${i.year}</h2><p>${fmt(i.yearStart)} → ${fmt(i.yearEnd)}</p></div><button class="btn primary" onclick="openYearReview()">Year Review</button></div>
+ <div class="grid grid-4">${metric("✓","Days tracked",s.tracked,`of ${s.days}`)}${metric("📚","Study",s.study.toFixed(1)+"h","total")}${metric("🏋","Exercise",s.exercise,"days")}${metric("⭐","Average score",s.score?s.score.toFixed(0):"—","/ 100")}</div>
+ <div style="height:16px"></div>
+ <div class="card"><div class="card-head"><h3>Year ${i.year} at a glance</h3><span class="small">12 personal chapters</span></div><table class="table"><thead><tr><th>Month</th><th>Dates</th><th>Tracked</th><th>Habits</th><th>Study</th><th>Journal</th></tr></thead><tbody>${months.map(x=>`<tr><td><b>Month ${x.m}</b></td><td>${shortFmt(x.start)} → ${shortFmt(x.end)}</td><td>${x.s.tracked}</td><td>${x.s.habitPct}%</td><td>${x.s.study.toFixed(1)}h</td><td>${x.s.journal}</td></tr>`).join("")}</tbody></table></div>
+ <div style="height:16px"></div><div class="grid grid-2"><div class="card"><h3>Mood distribution</h3>${Object.keys(s.mood).length?Object.entries(s.mood).map(([m,n])=>`<div class="list-row"><span>${m}</span><b>${n}</b></div>`).join(""):'<div class="empty">No mood data yet.</div>'}</div><div class="card"><h3>What Year ${i.year} carries forward</h3><p class="small">Your previous history stays available. The next volume can continue active habits, unfinished goals, and the lessons you record here.</p><div class="actions"><button class="btn soft" onclick="go('archive')">Open history</button></div></div></div>`;
+}
+window.openYearReview=function(){
+ const i=journeyInfo(currentDate), k=String(i.year), old=state.reviews.years[k]||{};
+ modal(`<h2>Year ${i.year} Review</h2><p class="small">${fmt(i.yearStart)} → ${fmt(i.yearEnd)}</p>
+ <div class="grid grid-2"><div><label>What did I track?</label><textarea id="yr1">${escape(old.tracked||"")}</textarea></div><div><label>What changed?</label><textarea id="yr2">${escape(old.changed||"")}</textarea></div><div><label>What am I proud of?</label><textarea id="yr3">${escape(old.proud||"")}</textarea></div><div><label>What remains unfinished?</label><textarea id="yr4">${escape(old.remaining||"")}</textarea></div><div class="full"><label>What should Year ${i.year+1} know?</label><textarea id="yr5">${escape(old.next||"")}</textarea></div></div>
+ <div class="actions"><button class="btn primary" onclick="saveYearReview('${k}')">Save Review</button><button class="btn" onclick="closeModal()">Cancel</button></div>`);
+}
+window.saveYearReview=function(k){state.reviews.years[k]={tracked:document.getElementById("yr1").value,changed:document.getElementById("yr2").value,proud:document.getElementById("yr3").value,remaining:document.getElementById("yr4").value,next:document.getElementById("yr5").value,savedAt:isoDateTime()};save();closeModal();toast("Year review saved.")}
+
+function renderTimeline(){
+ const i=journeyInfo(currentDate), items=[];
+ for(let y=1;y<=Math.max(i.year,3);y++){const ys=addYearsSameDay(state.profile.startDate,y-1), ye=addDays(addYearsSameDay(state.profile.startDate,y),-1);items.push({y,ys,ye,done:parseKey(ye)<new Date()})}
+ return `<div class="hero"><div><div class="kicker">The long view</div><h2>Journey Timeline</h2><p>Every year is a volume. Every month is a chapter.</p></div></div>
+ <div class="grid grid-2"><div class="card"><h3>My journey</h3><div class="timeline">${items.map(x=>`<div class="timeline-item"><h4>Year ${x.y} ${x.done?"✓":"→"}</h4><p>${fmt(x.ys)} → ${fmt(x.ye)}</p><div class="actions"><button class="btn" onclick="openYear(${x.y})">Open Year</button></div></div>`).join("")}</div></div>
+ <div class="card"><h3>Journey heatmap</h3><p class="small">Each square is one journey day. Intensity reflects your daily tracking activity.</p><div class="heatmap">${heatmapCells().join("")}</div><div class="small" style="margin-top:10px">Less · more activity</div></div></div>`;
+}
+function heatmapCells(){
+ const i=journeyInfo(currentDate), out=[]; const start=i.yearStart;
+ for(let n=0;n<365;n++){const d=addDays(start,n);if(parseKey(d)>parseKey(i.yearEnd))break;const r=state.days[d];let v=0;if(r){if(hasContent(r))v=1;if(r.journal)v++;if(r.score>=70)v++;if(Object.keys(r.habits||{}).length)v++;}out.push(`<button class="heat" data-v="${Math.min(4,v)}" title="${fmt(d)}"></button>`)} return out;
+}
+window.openYear=function(y){const d=addYearsSameDay(state.profile.startDate,y-1);currentDate=d;view="year";render()}
+
+function renderCalendar(){
+ const d=parseKey(currentDate), y=d.getFullYear(), m=d.getMonth(), first=new Date(y,m,1), start=state.profile.preferences.weekStart==="sunday"?first.getDay():(first.getDay()+6)%7;
+ const cells=Array(start).fill(null);for(let n=1;n<=daysInMonth(y,m+1);n++)cells.push(keyFromDate(new Date(y,m,n)));
+ return `<div class="hero"><div><div class="kicker">Real time</div><h2>${d.toLocaleDateString(undefined,{month:"long",year:"numeric"})}</h2><p>The real calendar remains visible alongside your personal journey.</p></div><div class="actions"><button class="btn" onclick="calendarMove(-1)">←</button><button class="btn" onclick="calendarMove(1)">→</button></div></div>
+ <div class="card"><div class="calendar">${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(x=>`<div class="cal-head">${x}</div>`).join("")}${cells.map(x=>x?`<button class="cal-day ${x===todayKey()?"today":""}" onclick="calendarDate('${x}')"><b>${parseKey(x).getDate()}</b><br><span class="small">${parseKey(x)>=parseKey(state.profile.startDate)?`Day ${journeyInfo(x).day}`:"Before journey"}</span></button>`:'<div class="cal-day empty"></div>').join("")}</div></div>`;
+}
+window.calendarDate=function(d){if(parseKey(d)>=parseKey(state.profile.startDate)){currentDate=d;view="day";render()}else toast("Your journey begins on "+fmt(state.profile.startDate)+".")};
+window.calendarMove=function(n){const d=parseKey(currentDate);d.setMonth(d.getMonth()+n);currentDate=keyFromDate(new Date(d.getFullYear(),d.getMonth(),1));view="calendar";render()}
+
+function renderHabits(){
+ const i=journeyInfo(currentDate),habits=state.habits,ms=stats(i.monthStart,i.monthEnd),top=topHabits(i.monthStart,i.monthEnd,15);
+ return `<div class="hero"><div><div class="kicker">Daily consistency</div><h2>Habit Tracker</h2><p>Your habits, streaks and monthly consistency in one place.</p></div><button class="btn primary" onclick="addHabit()">+ Add habit</button></div>
+ <div class="grid grid-4">${metric("✓","Active habits",habits.filter(h=>h.active).length,"currently running")}${metric("🔥","Current streak",streak(),"days")}${metric("📅","Month completion",ms.habitPct+"%","personal month")}${metric("🏆","Tracked days",ms.tracked,`of ${ms.days}`)}</div><div style="height:16px"></div>
+ <div class="card"><div class="panel-head"><div><h3 class="panel-title">Monthly habit grid</h3><div class="panel-sub">${fmt(i.monthStart)} → ${fmt(i.monthEnd)} · click a day to open its page</div></div><button class="btn" onclick="go('month')">Month summary</button></div>${habits.filter(h=>h.active).length?`<div class="habit-board">${habitMonthTable(i,habits.filter(h=>h.active))}</div><div class="board-legend"><span>Less</span><span class="legend-box"></span><span class="legend-box l1"></span><span class="legend-box l2"></span><span class="legend-box l3"></span><span class="legend-box l4"></span><span>More</span></div>`:`<div class="empty">No active habits yet.</div>`}</div><div style="height:16px"></div>
+ <div class="grid grid-2"><div class="card"><div class="panel-head"><div><h3 class="panel-title">15 Most Consistent Habits</h3><div class="panel-sub">Current personal month</div></div></div><div class="consistency-list">${top.length?top.map((x,n)=>`<div class="consistency-row"><div class="rank">${n+1}</div><div><div class="consistency-name">${x.h.icon} ${escape(x.h.name)}</div><div class="consistency-track"><i style="width:${x.pct}%"></i></div></div><div class="consistency-pct">${x.pct}%</div></div>`).join(""):`<div class="empty">Add habits to see consistency.</div>`}</div></div><div class="card"><div class="panel-head"><div><h3 class="panel-title">Weekly rhythm</h3><div class="panel-sub">Your last seven journey days</div></div></div><div class="week-bars">${lastSevenDays(todayKey()).map(x=>`<div class="week-day"><div class="week-bar-wrap"><div class="week-bar" style="height:${Math.max(3,x.pct)}%"></div></div><strong>${x.pct}%</strong><span>${shortFmt(x.date)}</span></div>`).join("")}</div></div></div><div style="height:16px"></div>
+ <div class="grid grid-2">${habits.length?habits.map(h=>`<div class="card"><div class="card-head"><h3>${h.icon} ${escape(h.name)}</h3><span class="tag">${h.active?"Active":"Archived"}</span></div><p class="small">${h.type} · target ${h.target} · ${h.frequency}</p><p class="small">Started ${fmt(h.startDate||state.profile.startDate)}${h.endDate?" · ended "+fmt(h.endDate):""}</p><div class="actions"><button class="btn" onclick="editHabit('${h.id}')">Edit</button>${h.active?`<button class="btn" onclick="archiveHabit('${h.id}')">Archive</button>`:`<button class="btn soft" onclick="resumeHabit('${h.id}')">Resume</button>`}<button class="btn" onclick="deleteHabit('${h.id}')">Delete</button></div></div>`).join(""):`<div class="card empty">No habits yet.<br>Add your first habit.</div>`}</div>`;
+}
+window.addHabit=function(){habitModal()};window.editHabit=function(id){habitModal(state.habits.find(h=>h.id===id))};
+function habitModal(h=null){const x=h||{id:"",name:"",icon:"✓",type:"boolean",target:1,frequency:"daily",startDate:state.profile.startDate,active:true};modal(`<h2>${h?"Edit":"Add"} habit</h2><div class="form-grid"><div><label>Name</label><input id="hn" class="input" value="${escape(x.name)}"></div><div><label>Icon</label><input id="hi" class="input" value="${escape(x.icon)}"></div><div><label>Tracking type</label><select id="ht"><option ${x.type==="boolean"?"selected":""}>boolean</option><option ${x.type==="number"?"selected":""}>number</option><option ${x.type==="duration"?"selected":""}>duration</option><option ${x.type==="rating"?"selected":""}>rating</option></select></div><div><label>Target</label><input id="hval" class="input" type="number" step=".1" value="${x.target}"></div><div><label>Start date</label><input id="hs" class="input" type="date" value="${x.startDate||state.profile.startDate}"></div></div><div class="actions"><button class="btn primary" onclick="saveHabit('${x.id}')">Save habit</button><button class="btn" onclick="closeModal()">Cancel</button></div>`)}
+window.saveHabit=function(id){const obj={id:id||uid(),name:document.getElementById("hn").value.trim()||"New habit",icon:document.getElementById("hi").value||"✓",type:document.getElementById("ht").value,target:Number(document.getElementById("hval").value)||1,frequency:"daily",startDate:document.getElementById("hs").value||state.profile.startDate,endDate:null,active:true};const old=state.habits.find(h=>h.id===id);if(old)Object.assign(old,obj);else state.habits.push(obj);save();closeModal();toast("Habit saved.");render()}
+window.archiveHabit=function(id){const h=state.habits.find(x=>x.id===id);if(h){h.active=false;h.endDate=todayKey();save();render()}};window.resumeHabit=function(id){const h=state.habits.find(x=>x.id===id);if(h){h.active=true;h.endDate=null;save();render()}};window.deleteHabit=function(id){confirmBox("Delete this habit? Historical daily records will remain, but the habit definition will be removed.",()=>{state.habits=state.habits.filter(h=>h.id!==id);save();render()})}
+
+function renderGoals(){
+ return `<div class="hero"><div><div class="kicker">Long-term direction</div><h2>Goals</h2><p>Goals are independent from habits and can continue across years.</p></div><button class="btn primary" onclick="goalModal()">+ Add goal</button></div>
+ <div class="grid grid-2">${state.goals.length?state.goals.map(g=>`<div class="card"><div class="card-head"><h3>${escape(g.name)}</h3><span class="tag">${g.status}</span></div><p class="small">${escape(g.description||"No description")}</p><div class="split"><span class="kpi">${g.target?Math.min(100,(Number(g.current||0)/Number(g.target))*100).toFixed(0):0}%</span><span class="small">${g.current||0} / ${g.target||0} ${escape(g.unit||"")}</span></div><div class="progress" style="margin:10px 0"><i style="width:${g.target?Math.min(100,(Number(g.current||0)/Number(g.target))*100):0}%"></i></div><p class="small">${g.startDate} → ${g.targetDate||"open"}</p><div class="actions"><button class="btn" onclick="goalModal('${g.id}')">Edit</button><button class="btn" onclick="goalStatus('${g.id}')">Change status</button><button class="btn" onclick="deleteGoal('${g.id}')">Delete</button></div></div>`).join(""):`<div class="card empty">No goals yet.<br>Create your first goal.</div>`}</div>`;
+}
+window.goalModal=function(id=null){
+ const g=state.goals.find(x=>x.id===id)||{id:"",name:"",description:"",startDate:todayKey(),targetDate:"",target:100,current:0,unit:"",status:"active"};
+ modal(`<h2>${id?"Edit":"Create"} goal</h2><div class="form-grid"><div class="full"><label>Goal name</label><input id="gn" class="input" value="${escape(g.name)}"></div><div class="full"><label>Description</label><input id="gd" class="input" value="${escape(g.description)}"></div><div><label>Start date</label><input id="gs" class="input" type="date" value="${g.startDate}"></div><div><label>Target date</label><input id="gt" class="input" type="date" value="${g.targetDate}"></div><div><label>Target value</label><input id="gval" class="input" type="number" value="${g.target}"></div><div><label>Current value</label><input id="gc" class="input" type="number" value="${g.current}"></div><div><label>Unit</label><input id="gu" class="input" value="${escape(g.unit)}" placeholder="hours, books, km..."></div></div><div class="actions"><button class="btn primary" onclick="saveGoal('${g.id}')">Save goal</button><button class="btn" onclick="closeModal()">Cancel</button></div>`);
+}
+window.saveGoal=function(id){const o={id:id||uid(),name:document.getElementById("gn").value.trim()||"Untitled goal",description:document.getElementById("gd").value,startDate:document.getElementById("gs").value,targetDate:document.getElementById("gt").value,target:Number(document.getElementById("gval").value)||0,current:Number(document.getElementById("gc").value)||0,unit:document.getElementById("gu").value,status:"active"};const old=state.goals.find(g=>g.id===id);if(old)Object.assign(old,o);else state.goals.push(o);save();closeModal();render()};
+window.goalStatus=function(id){const g=state.goals.find(x=>x.id===id);if(!g)return;const statuses=["active","complete","continue","modify","archive"];let n=statuses.indexOf(g.status);g.status=statuses[(n+1)%statuses.length];save();render()};
+window.deleteGoal=function(id){confirmBox("Delete this goal? Historical daily data will remain.",()=>{state.goals=state.goals.filter(g=>g.id!==id);save();render()})}
+
+function renderChallenges(){
+ return `<div class="hero"><div><div class="kicker">Focused experiments</div><h2>Challenges</h2><p>Keep time-boxed challenges separate from everyday habits.</p></div><button class="btn primary" onclick="challengeModal()">+ Add challenge</button></div>
+ <div class="grid grid-2">${state.challenges.length?state.challenges.map(c=>{let total=Math.max(1,diffDays(c.startDate,c.endDate)+1),done=Object.values(c.tasks||{}).filter(Boolean).length;return `<div class="card"><div class="card-head"><h3>${escape(c.name)}</h3><span class="tag">${c.status}</span></div><p class="small">${fmt(c.startDate)} → ${fmt(c.endDate)} · ${total} days</p><div class="progress"><i style="width:${Math.min(100,done/Math.max(1,c.taskCount||total)*100)}%"></i></div><p class="small" style="margin-top:9px">${done} completed check-ins</p><div class="actions"><button class="btn" onclick="toggleChallenge('${c.id}')">Check today</button><button class="btn" onclick="deleteChallenge('${c.id}')">Delete</button></div></div>`}).join(""):`<div class="card empty">No challenges yet.<br>Create a focused challenge.</div>`}</div>`;
+}
+window.challengeModal=function(){modal(`<h2>Create challenge</h2><div class="form-grid"><div class="full"><label>Name</label><input id="cn" class="input" placeholder="30 Day Reading"></div><div><label>Start</label><input id="cs" class="input" type="date" value="${todayKey()}"></div><div><label>End</label><input id="ce" class="input" type="date" value="${addDays(todayKey(),29)}"></div><div><label>Task/check-in count</label><input id="ct" class="input" type="number" value="30"></div></div><div class="actions"><button class="btn primary" onclick="saveChallenge()">Create challenge</button><button class="btn" onclick="closeModal()">Cancel</button></div>`)};
+window.saveChallenge=function(){const s=document.getElementById("cs").value,e=document.getElementById("ce").value;if(parseKey(e)<parseKey(s)){toast("End date must be after start date.");return}state.challenges.push({id:uid(),name:document.getElementById("cn").value||"New challenge",startDate:s,endDate:e,taskCount:Number(document.getElementById("ct").value)||1,tasks:{},status:"active"});save();closeModal();render()};
+window.toggleChallenge=function(id){const c=state.challenges.find(x=>x.id===id),d=todayKey();if(!c)return;if(parseKey(d)<parseKey(c.startDate)||parseKey(d)>parseKey(c.endDate)){toast("Today is outside this challenge.");return}c.tasks[d]=!c.tasks[d];save();render()};
+window.deleteChallenge=function(id){confirmBox("Delete this challenge?",()=>{state.challenges=state.challenges.filter(c=>c.id!==id);save();render()})}
+
+function renderArchive(){
+ let max=journeyInfo(todayKey()).year; const years=[];for(let y=1;y<=max;y++){const s=addYearsSameDay(state.profile.startDate,y-1),e=addDays(addYearsSameDay(state.profile.startDate,y),-1);years.push({y,s,e})}
+ return `<div class="hero"><div><div class="kicker">Everything you have lived</div><h2>My Journey</h2><p>Previous years remain readable. Nothing is automatically erased.</p></div></div>
+ <div class="grid grid-2">${years.map(x=>`<div class="card"><div class="card-head"><h3>Year ${x.y}</h3><span class="tag">${x.y<max?"Complete":"Current"}</span></div><p>${fmt(x.s)} → ${fmt(x.e)}</p><div class="actions"><button class="btn" onclick="openYear(${x.y})">Open</button><button class="btn" onclick="openYearReviewFor(${x.y})">Review</button></div></div>`).join("")}</div>`;
+}
+window.openYearReviewFor=function(y){currentDate=addYearsSameDay(state.profile.startDate,y-1);openYearReview()}
+
+function renderSettings(){
+ return `<div class="hero"><div><div class="kicker">Personalize the book</div><h2>Settings</h2><p>These preferences stay local to this device.</p></div></div>
+ <div class="grid grid-2">
+ <div class="card"><h3>Profile</h3><label>Your name</label><input id="profileName" class="input" value="${escape(state.profile.name)}" placeholder="Your name"><div style="height:12px"></div><label>Journey start date</label><input class="input" value="${state.profile.startDate}" disabled><div class="actions"><button class="btn primary" onclick="saveProfile()">Save profile</button></div></div>
+ <div class="card"><h3>Preferences</h3><div class="form-grid"><div><label>Theme</label><select id="theme" class="input"><option value="light" ${state.profile.preferences.theme==="light"?"selected":""}>Light</option><option value="dark" ${state.profile.preferences.theme==="dark"?"selected":""}>Dark</option><option value="system" ${state.profile.preferences.theme==="system"?"selected":""}>System</option></select></div><div><label>Week starts</label><select id="weekStart" class="input"><option value="monday" ${state.profile.preferences.weekStart==="monday"?"selected":""}>Monday</option><option value="sunday" ${state.profile.preferences.weekStart==="sunday"?"selected":""}>Sunday</option></select></div><div><label>Time format</label><select id="timeFormat" class="input"><option value="24">24 hour</option><option value="12">12 hour</option></select></div></div><div class="actions"><button class="btn primary" onclick="savePrefs()">Save preferences</button></div></div>
+ <div class="card"><h3>Backup</h3><p class="small">Export the complete journey or import a previous backup. Imports never silently replace your current journey.</p><div class="actions"><button class="btn" onclick="exportJSON()">Export JSON</button><button class="btn" onclick="exportCSV()">Export CSV</button><label class="btn" style="display:inline-block">Import JSON <input id="importFile" type="file" accept=".json" hidden onchange="importJSON(this.files[0])"></label></div></div>
+ <div class="card"><h3>Danger zone</h3><p class="small">Resetting is permanent for this browser. Export a backup first.</p><button class="btn danger" onclick="resetJourney()">Reset journey</button></div>
+ </div>`;
+}
+window.saveProfile=function(){state.profile.name=document.getElementById("profileName").value;save();toast("Profile saved.")};
+window.savePrefs=function(){state.profile.preferences.theme=document.getElementById("theme").value;state.profile.preferences.weekStart=document.getElementById("weekStart").value;state.profile.preferences.timeFormat=document.getElementById("timeFormat").value;save();applyTheme();toast("Preferences saved.");render()};
+function applyTheme(){const t=state?.profile?.preferences?.theme;if(t==="dark" || (t==="system"&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.style.setProperty("--bg","#20201d");document.documentElement.style.setProperty("--paper","#2a2925");document.documentElement.style.setProperty("--paper2","#33312c");document.documentElement.style.setProperty("--ink","#f5f1e8");document.documentElement.style.setProperty("--muted","#aaa69c");document.documentElement.style.setProperty("--line","#4b4942")}else{document.documentElement.style.setProperty("--bg","#f4f0e7");document.documentElement.style.setProperty("--paper","#fffdf8");document.documentElement.style.setProperty("--paper2","#f8f4eb");document.documentElement.style.setProperty("--ink","#292824");document.documentElement.style.setProperty("--muted","#7b776f");document.documentElement.style.setProperty("--line","#ded7ca")}}
+function exportJSON(){const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});downloadBlob(blob,"life-tracker-backup.json");toast("JSON backup exported.")};
+function exportCSV(){let rows=[["date","journeyDay","journeyYear","journeyMonth","mood","sleepHours","studyHours","exerciseMinutes","water","readingMinutes","score","journal"]];Object.keys(state.days).sort().forEach(d=>{const r=state.days[d];rows.push([d,r.journeyDay,r.journeyYear,r.journeyMonth,r.mood,sleepHours(r),r.study?.hours||0,r.exercise||0,r.water||0,r.reading||0,r.score||0,(r.journal||"").replace(/\n/g," ")])});const csv=rows.map(row=>row.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");downloadBlob(new Blob([csv],{type:"text/csv"}),"life-tracker-days.csv");toast("CSV exported.")};
+function downloadBlob(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+window.importJSON=function(file){if(!file)return;const fr=new FileReader();fr.onload=()=>{try{const incoming=JSON.parse(fr.result);if(!incoming.profile?.startDate||!incoming.days)throw new Error();confirmBox("Import this backup as a separate replacement of the current local data? Export your current data first if needed.",()=>{state=incoming;save();currentDate=todayKey();render();toast("Backup imported.")})}catch(e){toast("Invalid Life Tracker backup.")}};fr.readAsText(file)};
+window.resetJourney=function(){confirmBox("Delete the entire Life Tracker from this browser? This cannot be undone. Export first if you want a backup.",()=>{localStorage.removeItem(KEY);state=null;renderWelcome()})}
+
+function streak(){let n=0,d=todayKey();while(parseKey(d)>=parseKey(state.profile.startDate)){const r=state.days[d];if(!r||!hasContent(r))break;n++;d=addDays(d,-1)}return n}
+function calcScore(r){let s=0;const hs=state.habits.filter(h=>h.active);if(hs.length)s+=hs.filter(h=>r.habits[h.id]).length/hs.length*60;if(r.journal)s+=15;if(r.mood)s+=5;if(sleepHours(r)>=7)s+=10;if(r.study.hours>0)s+=10;return Math.round(Math.min(100,s))}
+function modal(body){document.body.insertAdjacentHTML("beforeend",`<div class="overlay" id="modal"><div class="modal">${body}</div></div>`)}
+function closeModal(){document.getElementById("modal")?.remove()}
+window.closeModal=closeModal;
+function confirmBox(message,yes){modal(`<h2>Are you sure?</h2><p class="small">${escape(message)}</p><div class="actions"><button class="btn danger" id="confirmYes">Continue</button><button class="btn" onclick="closeModal()">Cancel</button></div>`);document.getElementById("confirmYes").onclick=()=>{closeModal();yes()} }
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove("show"),2200)}
+
+applyTheme();init();
+setInterval(()=>{if(state && todayKey()!==currentDate && view==="today"){currentDate=todayKey();render()}},30000);
+})();
+</script>
+</body>
+</html>
